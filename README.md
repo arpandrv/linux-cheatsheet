@@ -1,6 +1,6 @@
 # Linux, at a glance.
 
-A static, continuous document containing 262 distinct command examples from the supplied 62-page Linux Handbook. Built with HTML, compiled Tailwind CSS, and vanilla JavaScript. Fonts are self-hosted IBM Plex; their OFL licenses are in `fonts/`.
+A static, continuous document containing 262 distinct command examples from the supplied 62-page Linux Handbook. Built with HTML, compiled Tailwind CSS, and vanilla JavaScript. The interface uses a native system sans-serif; commands use self-hosted IBM Plex Mono (OFL license in `fonts/`).
 
 **Live site:** https://arpandrv.github.io/linux-cheatsheet/
 

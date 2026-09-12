@@ -27,6 +27,7 @@ function filterCommands() {
   empty.hidden = count !== 0;
   document.body.classList.toggle('searching', words.length > 0);
   status.textContent = words.length ? `${count} matching ${count === 1 ? 'example' : 'examples'}` : `${rows.length} examples across ${sections.length} topics`;
+  updateCurrentTopic();
 }
 search.addEventListener('input', filterCommands);
 clear.addEventListener('click', () => { search.value = ''; filterCommands(); search.focus(); });
@@ -67,14 +68,29 @@ document.querySelector('#topic-select').addEventListener('change', event => {
   location.hash = event.target.value;
 });
 
-const observer = new IntersectionObserver(entries => {
-  const current = entries.filter(entry => entry.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-  if (!current) return;
+function updateCurrentTopic() {
+  const visible = sections.filter(section => !section.hidden);
+  const readingLine = document.querySelector('.toolbar').getBoundingClientRect().bottom + 72;
+  const current = visible.findLast(section => section.getBoundingClientRect().top <= readingLine) || visible[0];
   for (const link of navLinks) {
-    if (link.hash === `#${current.target.id}`) link.setAttribute('aria-current', 'location');
+    if (current && link.hash === `#${current.id}`) link.setAttribute('aria-current', 'location');
     else link.removeAttribute('aria-current');
   }
-  document.querySelector('#current-topic').textContent = current.target.dataset.title;
-}, { rootMargin: '-12% 0px -65% 0px' });
-sections.forEach(section => observer.observe(section));
+  document.querySelector('#current-topic').textContent = current?.dataset.title || 'No matching topics';
+}
+
+let observer;
+function observeReadingPosition() {
+  observer?.disconnect();
+  const readingLine = Math.min(innerHeight - 1, document.querySelector('.toolbar').getBoundingClientRect().bottom + 72);
+  // Observe a single reading line; callback entries contain changes, not all visible sections.
+  observer = new IntersectionObserver(updateCurrentTopic, {
+    rootMargin: `-${readingLine}px 0px -${innerHeight - readingLine - 1}px 0px`
+  });
+  sections.forEach(section => observer.observe(section));
+  updateCurrentTopic();
+}
+window.addEventListener('hashchange', () => requestAnimationFrame(updateCurrentTopic));
+window.addEventListener('resize', observeReadingPosition);
+observeReadingPosition();
 filterCommands();
